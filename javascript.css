@@ -1,0 +1,75 @@
+const API_BASE_URL = "https://travel-backend-ydgz.onrender.com";
+
+const loginPage = document.getElementById("login-page");
+const registerPage = document.getElementById("register-page");
+const dashboardPage = document.getElementById("dashboard-page");
+
+const loginForm = document.getElementById("login-form");
+const registerForm = document.getElementById("register-form");
+const showRegisterBtn = document.getElementById("show-register");
+const showLoginBtn = document.getElementById("show-login");
+const logoutBtn = document.getElementById("logout-button");
+
+function showPage(page) {
+  loginPage.classList.add("hidden");
+  registerPage.classList.add("hidden");
+  dashboardPage.classList.add("hidden");
+
+  if (page === "login") loginPage.classList.remove("hidden");
+  if (page === "register") registerPage.classList.remove("hidden");
+  if (page === "dashboard") dashboardPage.classList.remove("hidden");
+}
+
+showRegisterBtn.addEventListener("click", () => showPage("register"));
+showLoginBtn.addEventListener("click", () => showPage("login"));
+logoutBtn.addEventListener("click", () => {
+  localStorage.removeItem("token");
+  showPage("login");
+});
+
+// --- Register ---
+registerForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const full_name = document.getElementById("register-full_name").value;
+  const email = document.getElementById("register-email").value;
+  const username = document.getElementById("register-username").value;
+  const password = document.getElementById("register-password").value;
+  const confirmPassword = document.getElementById("register-confirmPassword").value;
+
+  if (password !== confirmPassword) return alert("Passwords do not match!");
+
+  const res = await fetch(`${API_BASE_URL}/api/auth/register`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ full_name, email, username, password }),
+  });
+
+  const data = await res.json();
+  if (res.ok) {
+    localStorage.setItem("token", data.token);
+    showPage("dashboard");
+  } else {
+    alert(data.message);
+  }
+});
+
+// --- Login ---
+loginForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const usernameOrEmail = document.getElementById("login-usernameOrEmail").value;
+  const password = document.getElementById("login-password").value;
+
+  const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ usernameOrEmail, password }),
+  });
+
+  const data = await res.json();
+  if (res.ok) {
+    localStorage.setItem("token", data.token);
+    showPage("dashboard");
+  } else {
+    alert(data.message);
+  }
+});
